@@ -12,11 +12,7 @@ const app = express();
 
 // 中间件
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://spark.hkg1.zeabur.app',
-    'https://https://spark.hkg1.zeabur.app/'  // 添加您的前端域名
-  ],
+  origin: '*',
   credentials: true
 }));
 app.use(express.json());
@@ -26,7 +22,10 @@ app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 app.use(compression());
 
 // 安全头
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false
+}));
 
 // 静态资源缓存
 app.use('/uploads', express.static('public/uploads', {
@@ -60,5 +59,7 @@ app.listen(PORT, () => {
 
 app.use((req, res, next) => {
   res.header('Content-Type', 'application/json');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
