@@ -1,0 +1,9 @@
+{
+  "build": {
+    "command": "npm install",
+    "output": "src"
+  },
+  "run": {
+    "command": "node src/app.js"
+  }
+} 
