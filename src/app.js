@@ -12,7 +12,18 @@ const app = express();
 
 // 中间件
 app.use(cors({
-  origin: '*',
+    origin: [
+        '*',
+        'http://localhost:3000',
+        'https://spark.hkg1.zeabur.app/performance-map',
+        'https://spark.hkg1.zeabur.app/recent-performances',
+        'https://spark.hkg1.zeabur.app/artists',
+        'https://spark.hkg1.zeabur.app/statistics',
+        'https://spark.hkg1.zeabur.app/update',
+        'https://spark.hkg1.zeabur.app',
+        'https://https://spark.hkg1.zeabur.app/'  // 添加您的前端域名
+      ],
+    
   credentials: true
 }));
 app.use(express.json());
