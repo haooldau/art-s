@@ -12,7 +12,11 @@ const app = express();
 
 // 中间件
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://your-frontend-domain.com'],
+  origin: [
+    'http://localhost:3000',
+    'https://spark.hkg1.zeabur.app',
+    'https://artback.hkg1.zeabur.app'  // 添加您的前端域名
+  ],
   credentials: true
 }));
 app.use(express.json());
