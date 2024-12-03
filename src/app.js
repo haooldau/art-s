@@ -15,7 +15,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'https://spark.hkg1.zeabur.app',
-    'https://artback.hkg1.zeabur.app'  // 添加您的前端域名
+    'https://https://spark.hkg1.zeabur.app/'  // 添加您的前端域名
   ],
   credentials: true
 }));
@@ -34,9 +34,12 @@ app.use('/uploads', express.static('public/uploads', {
   etag: true
 }));
 
-// 路由
+// 确保 API 路由在最前面
 app.use('/api/performances', performanceRoutes);
 app.use('/api/test', testRoutes);
+
+// 其他中间件和静态文件配置放在后面
+app.use(express.static('public'));
 
 // 错误处理
 app.use((err, req, res, next) => {
@@ -53,4 +56,9 @@ initializeDatabase().catch(console.error);
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-}); 
+});
+
+app.use((req, res, next) => {
+  res.header('Content-Type', 'application/json');
+  next();
+});
