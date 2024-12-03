@@ -13,7 +13,6 @@ async function initializeDatabase() {
         city VARCHAR(100),
         venue VARCHAR(255),
         poster VARCHAR(255),
-        notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);

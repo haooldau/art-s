@@ -33,6 +33,9 @@ app.use(helmet({
   contentSecurityPolicy: false
 }));
 
+// 在所有路由之前初始化数据库
+initializeDatabase().catch(console.error);
+
 // API 路由
 app.get('/api', (req, res) => {
   res.json({
