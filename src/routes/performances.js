@@ -15,12 +15,8 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
-});
+const upload = multer({ storage: storage });
 
-// 路由
 router.get('/', performanceController.getAllPerformances);
 router.post('/', upload.single('poster'), performanceController.createPerformance);
 
