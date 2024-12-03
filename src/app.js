@@ -10,46 +10,45 @@ const testRoutes = require('./routes/test');
 
 const app = express();
 
-// 中间件
+// CORS 配置
 app.use(cors({
-    origin: [
-        '*',
-        'http://localhost:3000',
-        'https://spark.hkg1.zeabur.app/performance-map',
-        'https://spark.hkg1.zeabur.app/recent-performances',
-        'https://spark.hkg1.zeabur.app/artists',
-        'https://spark.hkg1.zeabur.app/statistics',
-        'https://spark.hkg1.zeabur.app/update',
-        'https://spark.hkg1.zeabur.app',
-        'https://https://spark.hkg1.zeabur.app/'  // 添加您的前端域名
-      ],
-    
+  origin: [
+    '*',
+    'http://localhost:3000',
+    'https://spark.hkg1.zeabur.app',
+    'https://spark.hkg1.zeabur.app/update',
+    'https://spark.hkg1.zeabur.app/statistics',
+    'https://spark.hkg1.zeabur.app/artists',
+    'https://spark.hkg1.zeabur.app/performance-map',
+    'https://spark.hkg1.zeabur.app/recent-performances'
+  ],
   credentials: true
 }));
+
+// 基础中间件
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
-
-// 启用压缩
 app.use(compression());
-
-// 安全头
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: false
 }));
 
-// 静态资源缓存
-app.use('/uploads', express.static('public/uploads', {
-  maxAge: '1d',
-  etag: true
-}));
+// API 路由
+app.get('/api', (req, res) => {
+  res.json({
+    success: true,
+    message: 'SparkleLive API is running'
+  });
+});
 
-// 确保 API 路由在最前面
 app.use('/api/performances', performanceRoutes);
 app.use('/api/test', testRoutes);
 
-// 其他中间件和静态文件配置放在后面
-app.use(express.static('public'));
+// 静态文件
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads'), {
+  maxAge: '1d',
+  etag: true
+}));
 
 // 错误处理
 app.use((err, req, res, next) => {
@@ -60,17 +59,15 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 初始化数据库
-initializeDatabase().catch(console.error);
+// 404 处理
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: '接口不存在'
+  });
+});
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
-
-app.use((req, res, next) => {
-  res.header('Content-Type', 'application/json');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
 });
