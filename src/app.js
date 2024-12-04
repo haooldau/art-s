@@ -13,16 +13,13 @@ const app = express();
 // CORS 配置
 app.use(cors({
   origin: [
-    '*',
     'http://localhost:3000',
     'https://spark.hkg1.zeabur.app',
-    'https://spark.hkg1.zeabur.app/update',
-    'https://spark.hkg1.zeabur.app/statistics',
-    'https://spark.hkg1.zeabur.app/artists',
-    'https://spark.hkg1.zeabur.app/performance-map',
-    'https://spark.hkg1.zeabur.app/recent-performances'
+    'https://art-f.zeabur.app'
   ],
-  credentials: true
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false
 }));
 
 // 基础中间件
