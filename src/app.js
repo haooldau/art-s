@@ -2,21 +2,19 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const performanceRoutes = require('./routes/performances');
 const compression = require('compression');
 const helmet = require('helmet');
-const initializeDatabase = require('./config/initDb');
-const testRoutes = require('./routes/test');
+const sequelize = require('./config/database');
+
+// 导入路由
+const performanceRoutes = require('./routes/performances');
 
 const app = express();
 
 // CORS 配置
+const corsOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000'];
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://spark.hkg1.zeabur.app',
-    'https://art-f.zeabur.app'
-  ],
+  origin: corsOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: false
@@ -30,8 +28,24 @@ app.use(helmet({
   contentSecurityPolicy: false
 }));
 
-// 在所有路由之前初始化数据库
-initializeDatabase().catch(console.error);
+// 静态文件服务
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads'), {
+  maxAge: '1d',
+  etag: true
+}));
+
+// 数据库连接
+sequelize.authenticate()
+  .then(() => {
+    console.log('数据库连接成功');
+    // 同步数据库模型（仅在开发环境）
+    if (process.env.NODE_ENV === 'development') {
+      return sequelize.sync({ alter: true });
+    }
+  })
+  .catch(err => {
+    console.error('数据库连接失败:', err);
+  });
 
 // API 路由
 app.get('/api', (req, res) => {
@@ -42,15 +56,8 @@ app.get('/api', (req, res) => {
 });
 
 app.use('/api/performances', performanceRoutes);
-app.use('/api/test', testRoutes);
 
-// 静态文件
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads'), {
-  maxAge: '1d',
-  etag: true
-}));
-
-// 错误处理
+// 错误处理中间件
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
@@ -67,7 +74,9 @@ app.use((req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const PORT = process.env.PORT || 8001;
+const HOST = process.env.HOST || '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+  console.log(`服务器运行在 http://${HOST}:${PORT}`);
 });

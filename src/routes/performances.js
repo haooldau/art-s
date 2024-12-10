@@ -1,23 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
 const performanceController = require('../controllers/performanceController');
 
-// 配置文件上传
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// 获取演出列表
+router.get('/', performanceController.getPerformances);
 
-const upload = multer({ storage: storage });
+// 获取单个演出详情
+router.get('/:id', performanceController.getPerformance);
 
-router.get('/', performanceController.getAllPerformances);
-router.post('/', upload.single('poster'), performanceController.createPerformance);
+// 创建新演出
+router.post('/', performanceController.createPerformance);
+
+// 更新演出信息
+router.put('/:id', performanceController.updatePerformance);
+
+// 删除演出
+router.delete('/:id', performanceController.deletePerformance);
 
 module.exports = router; 

@@ -1,61 +1,136 @@
-const db = require('../config/database');
-const path = require('path');
-const fs = require('fs');
+const Performance = require('../models/Performance');
+const { Op } = require('sequelize');
 
-exports.getAllPerformances = async (req, res) => {
+// 获取演出列表
+exports.getPerformances = async (req, res) => {
   try {
-    const [rows] = await db.execute('SELECT * FROM performances ORDER BY created_at DESC');
-    res.json({ 
-      success: true, 
-      data: rows 
+    const {
+      page = 1,
+      limit = 10,
+      artist,
+      source,
+      startDate,
+      endDate,
+      status
+    } = req.query;
+
+    const where = {};
+    if (artist) where.artist = { [Op.like]: `%${artist}%` };
+    if (source) where.source = source;
+    if (status) where.status = status;
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) where.date[Op.gte] = new Date(startDate);
+      if (endDate) where.date[Op.lte] = new Date(endDate);
+    }
+
+    const performances = await Performance.findAndCountAll({
+      where,
+      limit: parseInt(limit),
+      offset: (parseInt(page) - 1) * parseInt(limit),
+      order: [['date', 'ASC']]
+    });
+
+    res.json({
+      success: true,
+      data: performances.rows,
+      total: performances.count,
+      page: parseInt(page),
+      totalPages: Math.ceil(performances.count / parseInt(limit))
     });
   } catch (error) {
-    console.error('获取数据错误:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: '服务器错误：' + error.message 
+    console.error('获取演出列表失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取演出列表失败'
     });
   }
 };
 
-exports.createPerformance = async (req, res) => {
+// 获取单个演出详情
+exports.getPerformance = async (req, res) => {
   try {
-    const { artist, type, province, city, venue, date } = req.body;
-    const poster = req.file ? `/uploads/${req.file.filename}` : null;
-
-    // 确保 uploads 目录存在
-    const uploadsDir = path.join(__dirname, '../../public/uploads');
-    if (!fs.existsSync(uploadsDir)){
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    const performance = await Performance.findByPk(req.params.id);
+    if (!performance) {
+      return res.status(404).json({
+        success: false,
+        message: '演出不存在'
+      });
     }
-
-    // 打印接收到的数据，用于调试
-    console.log('Received data:', { artist, type, province, city, venue, date, poster });
-
-    const [result] = await db.execute(
-      'INSERT INTO performances (artist, type, province, city, venue, date, poster) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [artist, type, province, city, venue, date, poster]
-    );
-
     res.json({
       success: true,
-      message: '数据提交成功',
-      data: {
-        id: result.insertId,
-        artist,
-        type,
-        province,
-        city,
-        venue,
-        date,
-        poster
-      }
+      data: performance
     });
   } catch (error) {
-    console.error('创建演出记录失败:', error);
+    console.error('获取演出详情失败:', error);
     res.status(500).json({
       success: false,
-      message: '服务器错误：' + error.message
+      message: '获取演出详情失败'
+    });
+  }
+};
+
+// 创建新演出
+exports.createPerformance = async (req, res) => {
+  try {
+    const performance = await Performance.create(req.body);
+    res.status(201).json({
+      success: true,
+      data: performance
+    });
+  } catch (error) {
+    console.error('创建演出失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '创建演出失败'
+    });
+  }
+};
+
+// 更新演出信息
+exports.updatePerformance = async (req, res) => {
+  try {
+    const performance = await Performance.findByPk(req.params.id);
+    if (!performance) {
+      return res.status(404).json({
+        success: false,
+        message: '演出不存在'
+      });
+    }
+    await performance.update(req.body);
+    res.json({
+      success: true,
+      data: performance
+    });
+  } catch (error) {
+    console.error('更新演出失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '更新演出失败'
+    });
+  }
+};
+
+// 删除演出
+exports.deletePerformance = async (req, res) => {
+  try {
+    const performance = await Performance.findByPk(req.params.id);
+    if (!performance) {
+      return res.status(404).json({
+        success: false,
+        message: '演出不存在'
+      });
+    }
+    await performance.destroy();
+    res.json({
+      success: true,
+      message: '演出已删除'
+    });
+  } catch (error) {
+    console.error('删除演出失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '删除演出失败'
     });
   }
 }; 
