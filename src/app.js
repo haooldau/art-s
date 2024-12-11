@@ -13,12 +13,12 @@ const app = express();
 
 // CORS 配置
 app.use(cors({
-  origin: '*',  // 允许所有来源
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
   credentials: false,
-  maxAge: 86400  // 预检请求缓存24小时
+  maxAge: 86400
 }));
 
 // 添加额外的 CORS 头
@@ -36,6 +36,17 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: false
 }));
+
+// 修改 JSON 响应设置
+app.set('json spaces', 0); // 禁用 JSON 格式化
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function(obj) {
+    // 确保返回的是一个干净的 JSON 字符串
+    return originalJson.call(this, JSON.parse(JSON.stringify(obj)));
+  };
+  next();
+});
 
 // 静态文件服务
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads'), {
