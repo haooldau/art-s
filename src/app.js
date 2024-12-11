@@ -12,7 +12,7 @@ const performanceRoutes = require('./routes/performances');
 const app = express();
 
 // CORS 配置
-const corsOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000'];
+const corsOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'https://sparkle.hkg1.zeabur.app'];
 app.use(cors({
   origin: corsOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
