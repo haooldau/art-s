@@ -1,4 +1,5 @@
 const Performance = require('../models/Performance');
+const Show = require('../models/Show');
 const { Op } = require('sequelize');
 
 // 获取演出列表
@@ -24,7 +25,7 @@ exports.getPerformances = async (req, res) => {
       if (endDate) where.date[Op.lte] = new Date(endDate);
     }
 
-    const performances = await Performance.findAndCountAll({
+    const performances = await Show.findAndCountAll({
       where,
       limit: parseInt(limit),
       offset: (parseInt(page) - 1) * parseInt(limit),
