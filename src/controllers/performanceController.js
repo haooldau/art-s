@@ -26,6 +26,21 @@ exports.getPerformances = async (req, res) => {
     }
 
     const performances = await Show.findAndCountAll({
+      attributes: [
+        'id',
+        'name',
+        'artist',
+        'tag',
+        'city',
+        'venue',
+        'lineup',
+        'date',
+        'price',
+        'status',
+        'detail_url',
+        'poster',
+        'created_at'
+      ],
       where,
       limit: parseInt(limit),
       offset: (parseInt(page) - 1) * parseInt(limit),
