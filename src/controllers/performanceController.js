@@ -12,13 +12,15 @@ exports.getPerformances = async (req, res) => {
       source,
       startDate,
       endDate,
-      status
+      status,
+      city
     } = req.query;
 
     const where = {};
     if (artist) where.artist = { [Op.like]: `%${artist}%` };
     if (source) where.source = source;
     if (status) where.status = status;
+    if (city) where.city = city;
     if (startDate || endDate) {
       where.date = {};
       if (startDate) where.date[Op.gte] = new Date(startDate);
@@ -70,7 +72,7 @@ exports.getPerformance = async (req, res) => {
     if (!performance) {
       return res.status(404).json({
         success: false,
-        message: '演出不存在'
+        message: '演��不存在'
       });
     }
     res.json({
