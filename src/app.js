@@ -8,6 +8,7 @@ const sequelize = require('./config/database');
 
 // 导入路由
 const performanceRoutes = require('./routes/performances');
+const artRoutes = require('./routes/art');
 
 const app = express();
 
@@ -76,6 +77,7 @@ app.get('/api', (req, res) => {
 });
 
 app.use('/api/performances', performanceRoutes);
+app.use('/api/art', artRoutes);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
