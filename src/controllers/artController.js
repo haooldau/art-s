@@ -29,8 +29,7 @@ exports.getArtistPrice = async (req, res) => {
 
     res.json({
       success: true,
-      num: results ? results.num : '暂无报价',
-      inDatabase: !!results
+      num: results ? results.num : '暂无报价'
     });
   } catch (error) {
     console.error('获取艺人报价失败:', error);
