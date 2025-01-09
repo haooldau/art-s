@@ -17,7 +17,10 @@ exports.getPerformances = async (req, res) => {
     } = req.query;
 
     const where = {};
-    if (artist) where.artist = { [Op.like]: `%${artist}%` };
+    if (artist) {
+      console.log('搜索艺人:', artist);
+      where.artist = artist.trim();
+    }
     if (source) where.source = source;
     if (status) where.status = status;
     if (city) where.city = city;
@@ -26,6 +29,8 @@ exports.getPerformances = async (req, res) => {
       if (startDate) where.date[Op.gte] = new Date(startDate);
       if (endDate) where.date[Op.lte] = new Date(endDate);
     }
+
+    console.log('查询条件:', where);
 
     const performances = await Show.findAndCountAll({
       attributes: [
@@ -72,7 +77,7 @@ exports.getPerformance = async (req, res) => {
     if (!performance) {
       return res.status(404).json({
         success: false,
-        message: '演��不存在'
+        message: '演出不存在'
       });
     }
     res.json({
