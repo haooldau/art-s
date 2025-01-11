@@ -5,6 +5,7 @@ const path = require('path');
 const compression = require('compression');
 const helmet = require('helmet');
 const sequelize = require('./config/database');
+const authRoutes = require('./routes/auth');
 
 // 导入路由
 const performanceRoutes = require('./routes/performances');
@@ -14,11 +15,11 @@ const app = express();
 
 // CORS 配置
 app.use(cors({
-  origin: '*',
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://127.0.0.1:3001'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  credentials: false,
+  credentials: true,
   maxAge: 86400
 }));
 
@@ -58,14 +59,25 @@ app.use('/uploads', express.static(path.join(__dirname, '../public/uploads'), {
 // 数据库连接
 sequelize.authenticate()
   .then(() => {
-    console.log('数据库连接成功');
+    console.log('主数据库连接成功');
     // 同步数据库模型（仅在开发环境）
     if (process.env.NODE_ENV === 'development') {
       return sequelize.sync({ alter: true });
     }
   })
   .catch(err => {
-    console.error('数据库连接失败:', err);
+    console.error('主数据库连接失败:', err);
+  });
+
+// 连接认证数据库
+const authSequelize = require('./config/authDatabase');
+authSequelize.authenticate()
+  .then(() => {
+    console.log('认证数据库连接成功');
+    return authSequelize.sync();
+  })
+  .catch(err => {
+    console.error('认证数据库连接失败:', err);
   });
 
 // API 路由
@@ -76,6 +88,10 @@ app.get('/api', (req, res) => {
   });
 });
 
+// 认证路由
+app.use('/api/auth', authRoutes);
+
+// 其他业务路由
 app.use('/api/performances', performanceRoutes);
 app.use('/api/art', artRoutes);
 
@@ -102,3 +118,5 @@ const HOST = process.env.HOST || '0.0.0.0';
 app.listen(PORT, HOST, () => {
   console.log(`服务器运行在 http://${HOST}:${PORT}`);
 });
+
+module.exports = app;
