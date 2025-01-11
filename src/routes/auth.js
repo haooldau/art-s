@@ -44,6 +44,7 @@ router.post('/register', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('注册失败:', error);
     res.status(500).json({ message: '服务器错误', error: error.message });
   }
 });
@@ -85,6 +86,7 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('登录失败:', error);
     res.status(500).json({ message: '服务器错误', error: error.message });
   }
 });
