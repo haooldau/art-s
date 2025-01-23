@@ -1,7 +1,8 @@
 const { DataTypes } = require('sequelize');
-const authSequelize = require('../config/authDatabase');
+const sequelize = require('../config/database');
+const bcrypt = require('bcryptjs');
 
-const User = authSequelize.define('User', {
+const User = sequelize.define('User', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -11,11 +12,6 @@ const User = authSequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true
-  },
-  accountId: {
-    type: DataTypes.STRING,
-    unique: true,
-    allowNull: false
   },
   realName: {
     type: DataTypes.STRING,
@@ -32,27 +28,16 @@ const User = authSequelize.define('User', {
   slogan: {
     type: DataTypes.STRING,
     allowNull: true
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
   }
 }, {
-  tableName: 'users',
-  timestamps: true
+  hooks: {
+    beforeCreate: async (user) => {
+      if (user.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    }
+  }
 });
-
-// 强制同步数据库，如果表不存在则创建
-authSequelize.sync({ force: true })
-  .then(() => {
-    console.log('User表已同步');
-  })
-  .catch(err => {
-    console.error('同步User表时出错:', err);
-  });
 
 module.exports = User; 
